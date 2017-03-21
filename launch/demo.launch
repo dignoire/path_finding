@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<launch>
+	
+	<arg name="map" default="7"/>
+
+	<arg name="algo" default="rrt_connect"/>
+	
+	<include file="$(find path_finding)/launch/suivi_chemin.launch">
+		<arg name="map" value="$(arg map)" />
+	</include>
+
+	<include file="$(find path_finding)/launch/$(arg algo).launch">
+		<arg name="map" value="$(arg map)" />
+	</include>
+
+	
+</launch>

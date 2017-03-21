@@ -1,0 +1,6 @@
+<launch>
+	<arg name="map" default=""/>
+	<arg name="step" default="20"/>
+	<arg name="sizeMax" default="2000"/>
+	<node pkg="path_finding" type="RRT_node" name="RRT_node" args="$(find path_finding)/maps/map$(arg map).png $(arg step) $(arg sizeMax)" output="screen"/>
+</launch>

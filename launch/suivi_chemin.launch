@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<launch>
+	
+	<arg name="map" default="7"/>	
+	
+	<node pkg="turtlesim" type="turtlesim_node" name="turtlesim_node" output="screen"/>
+
+	<node pkg="path_finding" type="suivi_node" name="suivi_node" args="$(find path_finding)/maps/map$(arg map).png " output="screen"/>
+	
+</launch>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<launch>
+	<arg name="map" default="3"/>
+	<arg name="limit" default="7"/>
+	<node pkg="path_finding" type="quadtree_node" name="quadtree_node" args="$(find path_finding)/maps/map$(arg map).png $(arg limit)" output="screen"/>
+</launch>
