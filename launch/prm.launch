@@ -1,8 +1,11 @@
 <?xml version="1.0"?>
 
 <launch>
-	<arg name="map" default=""/>
-	<node pkg="path_finding" type="PRM_node" name="PRM_node" args="$(find path_finding)/maps/map$(arg map).png" output="screen" />
+	<arg name="map" default="1"/>
+	<param name="prm/size_max" value="150" type="int" />
+	<param name="prm/step" value="30" type="int" />
+
+	<node pkg="path_finding" type="PRM_node" name="PRM_node" args="$(find path_finding)/maps/map$(arg map).png" output="screen"/>
 </launch>
 
 

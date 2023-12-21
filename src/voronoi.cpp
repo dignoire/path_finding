@@ -60,7 +60,7 @@ Voronoi::Voronoi(Mat map, Mat init): _map(map), _init(init){}
 
 void Voronoi::mouseEvents(int event, int x, int y)
 {
-    if( ( event == CV_EVENT_LBUTTONDOWN ) ) {
+    if( ( event == EVENT_LBUTTONDOWN ) ) {
         cout << "POINT: "<<x <<", " << y << endl;
         Point p = Point(x,y);
         _points.push_back(p);
@@ -332,8 +332,8 @@ int main(int argc, char** argv)
 
     Mat map,init;
     if (argc >= 2){
-        map = imread(argv[1], CV_LOAD_IMAGE_COLOR);
-        init = imread(argv[1], CV_LOAD_IMAGE_COLOR);
+        map = imread(argv[1], IMREAD_COLOR);
+        init = imread(argv[1], IMREAD_COLOR);
     }
     else{
         cout<<"ERROR need argv[1]: map.png for example"<<endl;
@@ -345,8 +345,8 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    cvNamedWindow( "Voronoi", WINDOW_AUTOSIZE);
-    cvStartWindowThread();
+    namedWindow( "Voronoi", WINDOW_AUTOSIZE);
+    startWindowThread();
     waitKey(100);
 
     Voronoi voronoi(map,init);
@@ -359,6 +359,6 @@ int main(int argc, char** argv)
         ros::spinOnce();
         loop_rate.sleep();
     }
-    cvDestroyWindow("Map window Voronoi");
+    destroyWindow("Map window Voronoi");
     return 0;
 }

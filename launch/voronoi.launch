@@ -1,5 +1,7 @@
+<?xml version="1.0"?>
+
 <launch>
-	<arg name="map" default="3"/>
+	<arg name="map" default="9"/>
 	<arg name="command" default="thin"/>
 	<arg name="implementation" default="guo_hall_fast"/>
 	<node pkg="path_finding" type="test_voronoi_node" name="test_voronoi_node" args="$(arg command) $(arg implementation) $(find path_finding)/maps/map$(arg map).png" output="screen"/>

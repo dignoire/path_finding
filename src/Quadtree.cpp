@@ -332,7 +332,7 @@ bool sendPath(path_finding::Path::Request  &req, path_finding::Path::Response &r
 
 void Quadtree::mouseEvents(int event, int x, int y)
 {
-    if( ( event == CV_EVENT_LBUTTONDOWN ) ) {
+    if( ( event == EVENT_LBUTTONDOWN ) ) {
         cout << x <<", " << y << endl;
         if(mouseStep == 0){
             _root = new Vertex(y,x);
@@ -369,7 +369,7 @@ int main(int argc, char** argv)
     Mat map;
     Mat mapProcessing;
     if (argc >= 2){
-        map = imread(argv[1], CV_LOAD_IMAGE_COLOR);
+        map = imread(argv[1], IMREAD_COLOR);
         cvtColor(map,mapProcessing,CV_RGB2GRAY);
         threshold(mapProcessing,mapProcessing, 120, 255, CV_THRESH_BINARY);
         Mat element5 = getStructuringElement(MORPH_ELLIPSE,Size(5,5));
@@ -388,9 +388,8 @@ int main(int argc, char** argv)
     }
 
 
-    cvNamedWindow( "Map window quadtree", WINDOW_AUTOSIZE );
-    //cvNamedWindow( "Map processing window", WINDOW_AUTOSIZE );
-    cvStartWindowThread();
+    namedWindow( "Map window quadtree", WINDOW_AUTOSIZE );
+    startWindowThread();
 
     imshow( "Map window quadtree", map );
     //imshow( "Map processing window", mapProcessing );
@@ -408,6 +407,11 @@ int main(int argc, char** argv)
     while(ros::ok()){
         if(mouseStep == 2 && step < limit){
             quadtree.loop();
+            for(int i=quadtree._squares.size()-1;i>=0;i--)
+            {
+                rectangle(quadtree._map, Point(quadtree._squares[i]._y,quadtree._squares[i]._x), Point(quadtree._squares[i]._y+quadtree._squares[i]._heigh,quadtree._squares[i]._x+quadtree._squares[i]._width), CV_RGB( 100, 100, 100 ), 1, 8, 0);
+            }
+            waitKey(1000);
             if(step == limit-1)
             {
                 for(int i=quadtree._squares.size()-1;i>=0;i--)
@@ -466,7 +470,8 @@ int main(int argc, char** argv)
         imshow( "Map window quadtree", quadtree._map );
         ros::spinOnce();
         loop_rate.sleep();
+        waitKey(5);
     }
-    cvDestroyWindow("Map window quadtree");
+    destroyWindow("Map window quadtree");
     return 0;
 }

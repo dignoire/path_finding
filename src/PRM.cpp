@@ -25,7 +25,6 @@ vector<Point> final_path;
 
 /**********************************************************/
 
-
 /*** TREE ***/
 class Tree
 {
@@ -155,7 +154,6 @@ bool PRM::connectable(Vertex previous, Vertex vrand, Vertex* newVertex)
 
 void PRM::smoothing(vector<Vertex> *path)
 {
-    Vertex tmp = Vertex(0,0);
     for(int i=0;i<path->size()-2;i++){
         for(int j=path->size()-1;j>=i+2;j--){
             bool connect = true;
@@ -210,7 +208,7 @@ void PRM::connectAllVertices()
                 if(val == 0) connect = false;
             }
             int d = distance(_tree->_vertex[i],_tree->_vertex[j]);
-            if(connect == true && _tree->_vertex[i].checkNeighbors(j) == false && d < round(2.5*_step)){
+            if(connect == true && _tree->_vertex[i].checkNeighbors(j) == false && d < round(5.0*_step)){
                 vector<int> tmpj;
                 tmpj.push_back(j);
                 tmpj.push_back(d);
@@ -321,7 +319,7 @@ void PRM::loop()
 
 void PRM::mouseEvents(int event, int x, int y)
 {
-    if( ( event == CV_EVENT_LBUTTONDOWN ) ) {
+    if( ( event == EVENT_LBUTTONDOWN ) ) {
         if(mouseStep == 0){
 
             _root = new Vertex(y,x);
@@ -333,7 +331,7 @@ void PRM::mouseEvents(int event, int x, int y)
             _tree->_vertex.push_back(*_root);
             cout << "root: "<< x <<", " << y << endl;
 
-            
+
 
         }
         else if(mouseStep == 1){
@@ -345,7 +343,7 @@ void PRM::mouseEvents(int event, int x, int y)
             cout << "destination: "<< x <<", " << y << endl;
         }
     }
-    
+
 }
 /**********************************************************/
 
@@ -356,11 +354,11 @@ void mouseEventsStatic( int event, int x, int y, int flags, void* prm)
 
 bool sendPath(path_finding::Path::Request  &req, path_finding::Path::Response &res)
 {
-  for(int i=0;i<final_path.size();i++){
-	geometry_msgs::Point32 tmp;
-	tmp.x = final_path[i].x;
-	tmp.y = final_path[i].y;
-	res.path.push_back(tmp);
+    for(int i=0;i<final_path.size();i++){
+        geometry_msgs::Point32 tmp;
+        tmp.x = final_path[i].x;
+        tmp.y = final_path[i].y;
+        res.path.push_back(tmp);
     }
     return true;
 }
@@ -381,13 +379,13 @@ int main(int argc, char** argv)
 
     Mat mapProcessing;
     if (argc >= 2){
-        map = imread(argv[1], CV_LOAD_IMAGE_COLOR);
+        map = imread(argv[1], IMREAD_COLOR);
         cvtColor(map,mapProcessing,CV_RGB2GRAY);
         threshold(mapProcessing,mapProcessing, 120, 255, CV_THRESH_BINARY);
         Mat element5 = getStructuringElement(MORPH_ELLIPSE,Size(5,5));
-        Mat element15 = getStructuringElement(MORPH_ELLIPSE,Size(20,20));
-        dilate(mapProcessing,mapProcessing,element5);
-        erode(mapProcessing,mapProcessing,element15);
+        Mat element15 = getStructuringElement(MORPH_ELLIPSE,Size(10,10));
+        // dilate(mapProcessing,mapProcessing,element5);
+        // erode(mapProcessing,mapProcessing,element15);
     }
     else{
         cout<<"ERROR need argv[1]: map.png for example"<<endl;
@@ -399,19 +397,19 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    cvNamedWindow( "Map window PRM", WINDOW_AUTOSIZE );
-    cvStartWindowThread();
+    namedWindow( "Map window PRM", WINDOW_AUTOSIZE );
+    startWindowThread();
     imshow( "Map window PRM", map );
     waitKey(100);
 
-    int step = 50;
-    if(argc >= 3) step = atoi(argv[2]);
+    int step = 25;
+    n.getParam( "prm/step", step);
 
     PRM prm(map,step,mapProcessing);
     setMouseCallback("Map window PRM", mouseEventsStatic, &prm);
 
-    int sizeMax = round(prm._freeSpace.size()/3700.0);
-    if(argc >= 4) sizeMax = atoi(argv[3]);
+    int sizeMax = round(prm._freeSpace.size()/2000); // example
+    n.getParam( "prm/size_max", sizeMax);
     prm._sizeMax = sizeMax;
 
     ros::Rate loop_rate(rate);
@@ -424,7 +422,8 @@ int main(int argc, char** argv)
         imshow( "Map window PRM", prm._map );
         ros::spinOnce();
         loop_rate.sleep();
+        waitKey(5);
     }
-    cvDestroyWindow("Map window PRM");
+    destroyWindow("Map window PRM");
     return 0;
 }

@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   nav_msgs
 )
+find_package(OpenCV REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -136,11 +137,14 @@ include_directories(
 add_executable(RRT_node src/RRT.cpp)
 add_executable(RRT_connect_node src/RRT_connect.cpp)
 add_executable(PRM_node src/PRM.cpp )
-add_executable(test_voronoi_node src/test_voronoi.cpp src/timer.h src/voronoi.h)
-add_executable(voronoi_node src/voronoi.cpp)
+# add_executable(test_voronoi_node src/test_voronoi.cpp src/timer.h src/voronoi.h)
+# add_executable(voronoi_node src/voronoi.cpp)
 add_executable(quadtree_node src/Quadtree.cpp)
+add_executable(astar_node src/AStar.cpp)
 add_executable(test_circle_node src/test_circle.cpp)
 add_executable(suivi_node src/suivi_chemin.cpp)
+add_executable(example src/example.cpp)
+add_executable(matching src/matching.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -149,27 +153,49 @@ add_executable(suivi_node src/suivi_chemin.cpp)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(RRT_node
   ${catkin_LIBRARIES}
-)
+  ${OpenCV_LIBRARIES})
+  # ${OpenCV_LIBS}
+
 target_link_libraries(RRT_connect_node
   ${catkin_LIBRARIES}
-)
+  ${OpenCV_LIBRARIES})
+    # ${OpenCV_LIBS}
+# )
 target_link_libraries(PRM_node
   ${catkin_LIBRARIES}
+    # ${OpenCV_LIBS}
 )
-target_link_libraries(test_voronoi_node
-  ${catkin_LIBRARIES}
-)
-target_link_libraries(voronoi_node
-  ${catkin_LIBRARIES}
-)
+# target_link_libraries(test_voronoi_node
+#   ${catkin_LIBRARIES}
+#     # ${OpenCV_LIBS}
+# )
+# target_link_libraries(voronoi_node
+#   ${catkin_LIBRARIES}
+#     # ${OpenCV_LIBS}
+# )
 target_link_libraries(quadtree_node
   ${catkin_LIBRARIES}
+    # ${OpenCV_LIBS}
+)
+target_link_libraries(astar_node
+ ${catkin_LIBRARIES}
+  #  ${OpenCV_LIBS}
 )
 target_link_libraries(test_circle_node
   ${catkin_LIBRARIES}
+    # ${OpenCV_LIBS}
 )
 target_link_libraries(suivi_node
   ${catkin_LIBRARIES}
+    # ${OpenCV_LIBS}
+)
+target_link_libraries(example
+ ${catkin_LIBRARIES}
+  #  ${OpenCV_LIBS}
+)	 
+target_link_libraries(matching
+ ${catkin_LIBRARIES}
+  #  ${OpenCV_LIBS}
 )
 
 #############

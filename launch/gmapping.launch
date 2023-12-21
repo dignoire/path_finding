@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<launch>
+  <arg name="size" default="5" />
+  <node pkg="gmapping" type="slam_gmapping" name="gmapping_thing" output="screen" >
+    <param name="xmin" value="-$(arg size)" />
+    <param name="xmax" value="$(arg size)" />
+    <param name="ymin" value="-$(arg size)" />
+    <param name="ymax" value="$(arg size)" />
+  </node>
+</launch>

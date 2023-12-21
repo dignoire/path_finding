@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<launch>
+	<arg name="map" default="1" />
+	<include file="$(find path_finding)/launch/quadtree.launch">
+		<arg name="map" value="$(arg map)" />
+	</include>
+	<!--include file="$(find path_finding)/launch/voronoi.launch" >
+		<arg name="map" value="$(arg map)" />
+	</include-->
+	<include file="$(find path_finding)/launch/rrt.launch" >
+		<arg name="map" value="$(arg map)" />
+	</include>
+	<include file="$(find path_finding)/launch/rrt_connect.launch" >
+		<arg name="map" value="$(arg map)" />
+	</include>
+	<include file="$(find path_finding)/launch/prm.launch" >
+		<arg name="map" value="$(arg map)" />
+	</include>
+	<include file="$(find path_finding)/launch/astar.launch" >
+		<arg name="map" value="$(arg map)" />
+	</include>
+</launch>

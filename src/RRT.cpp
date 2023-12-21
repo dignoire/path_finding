@@ -11,12 +11,11 @@
 #include "path_finding/Path.h"
 #include <ros/package.h>
 
-
 using namespace cv;
 using namespace std;
 
 int mouseStep = 0;
-int rate = 1000;
+int rate = 100;
 
 vector<Point> final_path;
 
@@ -201,7 +200,6 @@ bool RRT::connectable(Vertex previous, Vertex vrand, Vertex* newVertex)
     {
         int val = _mapProcessing.at<uchar>(it.pos());
         if(val == 0) connect = false;
-
     }
     return connect;
 }
@@ -308,7 +306,7 @@ void RRT::loop()
             if(result == true){
                 _tree->addEdge(idx,_tree->_vertex[idx],&newVertex);
                 circle(_map, Point(newVertex._y,newVertex._x), 5, CV_RGB( 10, 10, 10 ), 1);
-                _freeSpace.erase(_freeSpace.begin()+ r);
+                //_freeSpace.erase(_freeSpace.begin()+ r);
                 line(_map,Point(newVertex._y,newVertex._x),Point(_tree->_vertex[idx]._y,_tree->_vertex[idx]._x) ,CV_RGB( 10, 10, 10 ));
 
                 bool connect = true;
@@ -342,7 +340,7 @@ void RRT::loop()
 
 void RRT::mouseEvents(int event, int x, int y)
 {
-    if( ( event == CV_EVENT_LBUTTONDOWN ) ) {
+    if( ( event == EVENT_LBUTTONDOWN ) ) {
         cout << x <<", " << y << endl;
 
         if(mouseStep == 0){
@@ -383,6 +381,7 @@ bool sendPath(path_finding::Path::Request  &req, path_finding::Path::Response &r
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "rrt");
+
     ros::start();
     srand (time(NULL));
 
@@ -391,16 +390,41 @@ int main(int argc, char** argv)
     string path = ros::package::getPath("path_finding");
     cout<<path<<endl;
 
-    Mat map;
-    Mat mapProcessing;
+    Mat map,mapProcessing,tmp,white,wall,free,clean;
+
+    namedWindow( "RRT", WINDOW_AUTOSIZE );
+    //namedWindow( "free", WINDOW_AUTOSIZE );
+    //namedWindow( "wall", WINDOW_AUTOSIZE );
+    //namedWindow( "clean", WINDOW_AUTOSIZE );
+    //namedWindow( "map processing", WINDOW_AUTOSIZE );
+
     if (argc >= 2){
-        map = imread(argv[1], CV_LOAD_IMAGE_COLOR);
-        cvtColor(map,mapProcessing,CV_RGB2GRAY);
-        threshold(mapProcessing,mapProcessing, 120, 255, CV_THRESH_BINARY);
+        map = imread(argv[1], IMREAD_COLOR);
+        mapProcessing = imread(argv[1], IMREAD_GRAYSCALE);
+
+        white = cv::Mat::zeros(mapProcessing.size(), mapProcessing.type());
+        white = Scalar(255);
+        clean = cv::Mat::zeros(mapProcessing.size(), mapProcessing.type());
+
+        threshold(mapProcessing,tmp, 0, 10, CV_THRESH_BINARY);
         Mat element5 = getStructuringElement(MORPH_ELLIPSE,Size(5,5));
-        Mat element20 = getStructuringElement(MORPH_ELLIPSE,Size(20,20));
-        dilate(mapProcessing,mapProcessing,element5);
-        erode(mapProcessing,mapProcessing,element20);
+        Mat element10 = getStructuringElement(MORPH_ELLIPSE,Size(10,10));
+        erode(tmp,tmp,element10);
+        dilate(tmp,tmp,element5);
+        wall = tmp.mul(white);
+        //imshow("wall",wall);
+
+        dilate(mapProcessing,free,element5);
+        erode(free,free,element10);
+        //imshow("free",free);
+
+        free.copyTo(clean, wall);
+
+        //imshow("clean",clean);
+        clean.copyTo(mapProcessing);
+        threshold(mapProcessing,mapProcessing, 220, 255, CV_THRESH_BINARY);
+        //imshow("map processing",mapProcessing);
+
     }
     else{
         cout<<"ERROR need argv[1]: map.png for example"<<endl;
@@ -412,11 +436,10 @@ int main(int argc, char** argv)
         return -1;
     }
 
+    startWindowThread();
+    imshow( "RRT", map );
 
-    cvNamedWindow( "Map window RRT", WINDOW_AUTOSIZE );
-    cvStartWindowThread();
-    imshow( "Map window RRT", map );
-    waitKey(100);
+    waitKey(1000);
 
     int step = 20;
     if(argc >= 3) step = atoi(argv[2]);
@@ -425,7 +448,7 @@ int main(int argc, char** argv)
     if(argc >= 4) sizeMax = atoi(argv[3]);
 
     RRT rrt(map,step,sizeMax,mapProcessing);
-    setMouseCallback("Map window RRT", mouseEventsStatic, &rrt);
+    setMouseCallback("RRT", mouseEventsStatic, &rrt);
 
     ros::Rate loop_rate(rate);
     while(ros::ok()){
@@ -433,10 +456,13 @@ int main(int argc, char** argv)
             rrt.loop();
         }
         //cout << "loop" <<endl;
-        imshow( "Map window RRT", rrt._map );
+        imshow( "RRT", rrt._map );
         ros::spinOnce();
         loop_rate.sleep();
+        waitKey(10);
     }
-    cvDestroyWindow("Map window RRT");
+
+    //waitKey(0);
+    destroyWindow("RRT");
     return 0;
 }

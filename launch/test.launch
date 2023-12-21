@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+
+<launch>
+	<arg name="fullscreen_mode" default="--fullscreen"/> <!--no-fullscreen -->
+	<node pkg="path_finding" type="test.py" name="test" args="$(arg fullscreen_mode)" output="screen" />
+</launch>

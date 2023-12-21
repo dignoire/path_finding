@@ -9,6 +9,7 @@
 #include <iostream>
 #include <vector>
 #include "path_finding/Path.h"
+#include "nav_msgs/Path.h"
 
 
 
@@ -129,6 +130,7 @@ public:
   Tree* _tree_root;
   Tree* _tree_dest;
   bool trees_connectable(Vertex v, Tree *tree, Vertex *vtree);
+  ros::Publisher _pub_path;
 
 private:
   int _sizeMax;
@@ -302,7 +304,7 @@ bool RRT_connect::loop(Tree* tree, Vertex *newVertex)
       if(result == true){
         tree->addEdge(idx,tree->_vertex[idx],newVertex);
         circle(_map, Point(newVertex->_y,newVertex->_x), 5, CV_RGB( 10, 10, 10 ), 1);
-        _freeSpace.erase(_freeSpace.begin()+ r);
+        //_freeSpace.erase(_freeSpace.begin()+ r);
         line(_map,Point(newVertex->_y,newVertex->_x),Point(tree->_vertex[idx]._y,tree->_vertex[idx]._x) ,CV_RGB( 10, 10, 10 ));
         vertexAdded = true;
         //v = newVertex;
@@ -338,7 +340,7 @@ bool RRT_connect::trees_connectable(Vertex v, Tree *tree, Vertex *vtree)
 
 void RRT_connect::mouseEvents(int event, int x, int y)
 {
-  if( ( event == CV_EVENT_LBUTTONDOWN ) ) {
+  if( ( event == EVENT_LBUTTONDOWN ) ) {
     cout << x <<", " << y << endl;
 
     if(mouseStep == 0){
@@ -363,10 +365,8 @@ void mouseEventsStatic( int event, int x, int y, int flags, void* rrt_connect)
   static_cast<RRT_connect*>(rrt_connect)->mouseEvents(event,x,y);
 }
 
-bool sendPath(path_finding::Path::Request  &req, path_finding::Path::Response &res)
+bool sendPathTurtle(path_finding::Path::Request  &req, path_finding::Path::Response &res)
 {
-
-  //for(int i=final_path.size()-1;i>=0;i--){
   int j = 0;
   for(int i=0;i<final_path.size();i++)
   {
@@ -382,6 +382,30 @@ bool sendPath(path_finding::Path::Request  &req, path_finding::Path::Response &r
   return true;
 }
 
+/*void sendPath()
+{
+    nav_msgs::Path path;
+    int j = 0;
+    for(int i=0;i<final_path.size();i++)
+    {
+        if(inverse)
+        j = final_path.size()-1 - i;
+        else
+        j = i;
+        //geometry_msgs::Point32 tmp;
+        geometry_msgs::PoseStamped tmp;
+
+        tmp.pose.position.x = final_path[j].x;
+        tmp.pose.position.y = final_path[j].y;
+        path.poses.push_back(tmp);
+
+    }
+    rrt_connect._pub_path.publish(path);
+}*/
+
+
+
+
 /*** MAIN ***/
 
 int main(int argc, char** argv)
@@ -391,18 +415,43 @@ int main(int argc, char** argv)
   srand (time(NULL));
 
   ros::NodeHandle n;
-  ros::ServiceServer service = n.advertiseService("path", sendPath);
+  ros::ServiceServer serviceTurtle = n.advertiseService("pathTurtle", sendPathTurtle);
 
-  Mat map;
-  Mat mapProcessing;
+  Mat map,mapProcessing,tmp,white,wall,free,clean;
+
+  namedWindow( "RRT connect", WINDOW_AUTOSIZE );
+  //namedWindow( "free", WINDOW_AUTOSIZE );
+  //namedWindow( "wall", WINDOW_AUTOSIZE );
+  //namedWindow( "clean", WINDOW_AUTOSIZE );
+  //namedWindow( "map processing", WINDOW_AUTOSIZE );
+
   if (argc >= 2){
-    map = imread(argv[1], CV_LOAD_IMAGE_COLOR);
-    cvtColor(map,mapProcessing,CV_RGB2GRAY);
-    threshold(mapProcessing,mapProcessing, 120, 255, CV_THRESH_BINARY);
-    Mat element5 = getStructuringElement(MORPH_ELLIPSE,Size(5,5));
-    Mat element15 = getStructuringElement(MORPH_ELLIPSE,Size(20,20));
-    dilate(mapProcessing,mapProcessing,element5);
-    erode(mapProcessing,mapProcessing,element15);
+      map = imread(argv[1], cv::IMREAD_COLOR);
+      mapProcessing = imread(argv[1], cv::IMREAD_GRAYSCALE);
+
+      white = cv::Mat::zeros(mapProcessing.size(), mapProcessing.type());
+      white = Scalar(255);
+      clean = cv::Mat::zeros(mapProcessing.size(), mapProcessing.type());
+
+      threshold(mapProcessing,tmp, 0, 10, CV_THRESH_BINARY);
+      Mat element5 = getStructuringElement(MORPH_ELLIPSE,Size(5,5));
+      Mat element10 = getStructuringElement(MORPH_ELLIPSE,Size(10,10));
+      erode(tmp,tmp,element10);
+      dilate(tmp,tmp,element5);
+      wall = tmp.mul(white);
+      //imshow("wall",wall);
+
+      dilate(mapProcessing,free,element5);
+      erode(free,free,element10);
+      //imshow("free",free);
+
+      free.copyTo(clean, wall);
+
+      //imshow("clean",clean);
+      clean.copyTo(mapProcessing);
+      threshold(mapProcessing,mapProcessing, 220, 255, CV_THRESH_BINARY);
+      //imshow("map processing",mapProcessing);
+
   }
   else{
     cout<<"ERROR need argv[1]: map.png for example"<<endl;
@@ -414,9 +463,10 @@ int main(int argc, char** argv)
     return -1;
   }
 
-  cvNamedWindow( "Map window connect", WINDOW_AUTOSIZE );
-  cvStartWindowThread();
-  imshow( "Map window connect", map );
+  namedWindow( "RRT connect", WINDOW_AUTOSIZE );
+  startWindowThread();
+  imshow( "RRT connect", map );
+
   waitKey(100);
 
   int step = 20;
@@ -426,7 +476,9 @@ int main(int argc, char** argv)
   if(argc >= 4) sizeMax = atoi(argv[3]);
 
   RRT_connect rrt_connect(map,step,sizeMax,mapProcessing);
-  setMouseCallback("Map window connect", mouseEventsStatic, &rrt_connect);
+  rrt_connect._pub_path = n.advertise<nav_msgs::Path>("path",10);
+
+  setMouseCallback("RRT connect", mouseEventsStatic, &rrt_connect);
 
   ros::Rate loop_rate(rate);
   while(ros::ok()){
@@ -481,10 +533,11 @@ int main(int argc, char** argv)
         final_path = rrt_connect.spline(path);
       }
     }
-    imshow( "Map window connect", rrt_connect._map );
+    imshow( "RRT connect", rrt_connect._map );
     ros::spinOnce();
     loop_rate.sleep();
+    waitKey(5);
   }
-  cvDestroyWindow("Map window connect");
+  destroyWindow("RRT connect");
   return 0;
 }

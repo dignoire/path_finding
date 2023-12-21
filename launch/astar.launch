@@ -1,0 +1,5 @@
+<?xml version="1.0" ?>
+<launch>
+	<arg name="map" default="1"/>
+	<node pkg="path_finding" type="astar_node" name="astar_node" args="$(find path_finding)/maps/map$(arg map).png" output="screen"/>
+</launch>

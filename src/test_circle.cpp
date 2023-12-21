@@ -57,7 +57,7 @@ void threshfunction(Mat src_gray,int thresh)
     }
 
     /// Show in a window
-    namedWindow( "Contours", CV_WINDOW_AUTOSIZE );
+    namedWindow( "Contours", WINDOW_AUTOSIZE );
     imshow( "Contours", drawing );
 }
 
@@ -90,13 +90,13 @@ int main( int argc, char** argv )
 
     /// Create Window
     String source_window = "Source";
-    namedWindow( source_window, CV_WINDOW_AUTOSIZE );
+    namedWindow( source_window, WINDOW_AUTOSIZE );
     imshow( source_window, src );
 
     //createTrackbar( " Threshold:", "Source", &thresh, max_thresh, thresh_callback );
     //thresh_callback( 0, 0 );
 
-    namedWindow( "map", CV_WINDOW_AUTOSIZE );
+    namedWindow( "map", WINDOW_AUTOSIZE );
     imshow( "map", map );
 
     waitKey(0);
@@ -139,7 +139,7 @@ void thresh_callback(int, void* )
     }
 
     /// Show in a window
-    namedWindow( "Contours", CV_WINDOW_AUTOSIZE );
+    namedWindow( "Contours", WINDOW_AUTOSIZE );
     imshow( "Contours", drawing );
 }
 

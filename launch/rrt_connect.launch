@@ -1,6 +1,8 @@
+<?xml version="1.0"?>
 <launch>
 	<arg name="map" default="3"/>
 	<arg name="step" default="20"/>
 	<arg name="sizeMax" default="2000"/>
+	<!--node pkg="path_finding" type="RRT_connect_node" name="RRT_connect_node" args="$(find path_finding)/maps/buvette.pgm $(arg step) $(arg sizeMax)" output="screen"/-->
 	<node pkg="path_finding" type="RRT_connect_node" name="RRT_connect_node" args="$(find path_finding)/maps/map$(arg map).png $(arg step) $(arg sizeMax)" output="screen"/>
 </launch>

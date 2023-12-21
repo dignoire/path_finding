@@ -236,7 +236,7 @@ int main(int argc, char **argv)
 
 
   if (argc >= 2){
-        mymap = imread(argv[1], CV_LOAD_IMAGE_COLOR);
+        mymap = imread(argv[1], IMREAD_COLOR);
   }
   else{
       cout<<"ERROR need argv[1]: map.png for example"<<endl;
@@ -248,8 +248,8 @@ int main(int argc, char **argv)
       return -1;
   }
 
-  cvNamedWindow("path following", WINDOW_AUTOSIZE );
-  cvStartWindowThread();
+  namedWindow("path following", WINDOW_AUTOSIZE );
+  startWindowThread();
   imshow("path following", mymap );
   waitKey(100);
 
@@ -308,6 +308,7 @@ int main(int argc, char **argv)
       imshow("path following", mymap );
       ros::spinOnce();
       loop_rate.sleep();
+      waitKey(10);
   }
   return 0;
 }
